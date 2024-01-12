@@ -1,10 +1,18 @@
 open Lexer
 open Core
 
+(* NOTE: We don't actually want to expose the lexer data structure
+   implemenation in our `production` code. Will remove the `init-lexer` tests
+   in the future. *)
+
 module Lexer_test = struct
-  let create_lexer input =
-    let l = Lexer.init input in
-    l.input, l.position, l.ch
+  let tuple_of_lexer l = l.input, l.position, l.ch
+  let create_lexer input = Lexer.init input |> tuple_of_lexer
+
+  let next_token l =
+    let new_lex, tok = Lexer.next_token l in
+    let tup = tuple_of_lexer new_lex in
+    tup, tok
   ;;
 end
 
