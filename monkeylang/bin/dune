@@ -1,4 +1,6 @@
 (executable
  (public_name monkeylang)
  (name main)
- (libraries lib))
+ (libraries lib)
+ (preprocess
+  (pps ppx_deriving.show ppx_jane ppx_sexp_conv)))

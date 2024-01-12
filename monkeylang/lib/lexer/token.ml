@@ -2,7 +2,7 @@ type t =
   | Illegal
   | Eof
   (* Integer *)
-  | Integer of int
+  | Integer of string
   (* Identifiers *)
   | Identifier of string
   (* Operators *)
