@@ -14,6 +14,10 @@ type t =
   | RightParen
   | LeftBrace
   | RightBrace
+  | LeftBracket
+  | RightBracket
+  | LeftAngle
+  | RightAngle
   | Comma
   | Semicolon
   (* Keywords *)
@@ -23,8 +27,8 @@ type t =
 let string_of_token = function
   | Illegal -> "Illegal"
   | Eof -> "Eof"
-  | Integer integer -> integer
-  | Identifier ident -> ident
+  | Integer integer -> "Integer: " ^ integer
+  | Identifier ident -> "Ident: " ^ ident
   | Assign -> "Assign"
   | Plus -> "Plus"
   | Minus -> "Minus"
@@ -32,6 +36,10 @@ let string_of_token = function
   | RightParen -> "RightParen"
   | LeftBrace -> "LeftBrace"
   | RightBrace -> "RightBrace"
+  | LeftBracket -> "LeftBracket"
+  | RightBracket -> "RightBracket"
+  | LeftAngle -> "LeftAngle"
+  | RightAngle -> "RightAngle"
   | Comma -> "Comma"
   | Semicolon -> "Semicolon"
   | Let -> "Let"

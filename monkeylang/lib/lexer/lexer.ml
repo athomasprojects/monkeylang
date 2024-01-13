@@ -1,5 +1,4 @@
 open Core
-module Token = Token
 
 type t =
   { input : string
@@ -13,42 +12,27 @@ let init input =
   let lex =
     if String.is_empty input
     then { input; position = 0; ch = None }
-    else { input; position = 0; ch = Some (String.get input 0) }
+    else { input; position = 0; ch = Some (String.get input 1) }
   in
   let _ = Fmt.pr "@.Creating lexer => %a@." pp lex in
   lex
 ;;
 
-(* let read_char lexer = *)
-(*   if String.is_empty lexer.input *)
-(*      && lexer.position > String.length lexer.input - 1 *)
-(*   then None *)
-(*   else Some (String.get lexer.input lexer.position) *)
-(* ;; *)
-(**)
-(* let peek_char lexer = *)
-(*   match String.is_empty lexer.input with *)
-(*   | true -> None *)
-(*   | false -> *)
-(*     let position = succ lexer.position in *)
-(*     if position >= 0 && position <= String.length lexer.input *)
-(*     then Some (String.get lexer.input lexer.position) *)
-(*     else None *)
-(* ;; *)
+(* TODO: implement `peek` function to handle checking 'next' character for tokenizing idents, integers, and keywords *)
 
 let advance_lexer lexer =
   let { input; position; _ } = lexer in
   let position = succ position in
-  let str_length = String.length input in
+  let str_length = String.length input - 1 in
   let remaining_chars = str_length - position in
   if remaining_chars > 0 && remaining_chars < str_length
   then (
-    let ch = Some (String.get input position) in
+    let ch = Some (String.get input (succ position)) in
     { input; position; ch })
   else { input; position; ch = None }
 ;;
 
-(* Takes in token and returns a token option. We keep lexing until `next_token` returns `None`.*)
+(* Keeps lexing until `next_token` returns `None`. This is when the entire stream of characters has been tokenized and have reached the end of the input stream. *)
 let rec next_token lexer =
   let str_length = String.length lexer.input - 1 in
   let aux lex =
@@ -78,6 +62,10 @@ let rec next_token lexer =
          | ')' -> RightParen
          | '{' -> LeftBrace
          | '}' -> RightBrace
+         | '[' -> LeftBracket
+         | '<' -> LeftAngle
+         | '>' -> RightAngle
+         | ']' -> RightBracket
          | ',' -> Comma
          | ';' -> Semicolon
          | _ -> Illegal)
@@ -90,8 +78,8 @@ let rec next_token lexer =
       let _ = Fmt.pr "==== Advancing lexer@." in
       new_lex, Some tok
   in
-  let lex_, tok_ = aux lexer in
-  match tok_ with
-  | None -> lex_, tok_
-  | Some _ -> next_token lex_
+  let lex, tok = aux lexer in
+  match tok with
+  | None -> lex, tok
+  | Some _ -> next_token lex
 ;;
