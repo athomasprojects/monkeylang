@@ -9,11 +9,10 @@ module Lexer_test = struct
   let tuple_of_lexer l = l.input, l.position, l.ch
   let create_lexer input = Lexer.init input |> tuple_of_lexer
 
-  let next_token l =
-    let new_lex, tok = Lexer.next_token l in
-    let tup = tuple_of_lexer new_lex in
-    tup, tok
-  ;;
+  (* let next_token l = *)
+  (*   let new_lex, tok = Lexer.next_token l in *)
+  (*   let tup = tuple_of_lexer new_lex in *)
+  (*   tup, tok *)
 end
 
 let test_init_lexer_aux s =
