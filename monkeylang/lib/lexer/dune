@@ -1,6 +1,0 @@
-(library
-  (name lexer)
-  (libraries core fmt)
-  (preprocess
-  (pps ppx_deriving.show ppx_jane ppx_sexp_conv ppx_variants_conv))
-  )

@@ -1,4 +1,4 @@
-open Lexer
+open Lib.Lexer
 open Core
 
 (* NOTE: We don't actually want to expose the lexer data structure
@@ -7,7 +7,7 @@ open Core
 
 module Lexer_test = struct
   let tuple_of_lexer l = l.input, l.position, l.ch
-  let create_lexer input = Lexer.init input |> tuple_of_lexer
+  let create_lexer input = init input |> tuple_of_lexer
 
   (* let next_token l = *)
   (*   let new_lex, tok = Lexer.next_token l in *)
