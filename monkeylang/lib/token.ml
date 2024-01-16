@@ -15,6 +15,8 @@ type t =
   | Equal
   | NotEqual
   | Bang
+  | Asterisk
+  | Slash
   (* Delimeters *)
   | LeftParen
   | RightParen
@@ -29,6 +31,11 @@ type t =
   (* Keywords *)
   | Let
   | Function
+  | If
+  | Else
+  | True
+  | False
+  | Return
 
 let string_of_token = function
   | Illegal -> "Illegal"
@@ -41,6 +48,8 @@ let string_of_token = function
   | Equal -> "Equal"
   | NotEqual -> "NotEqual"
   | Bang -> "Bang"
+  | Asterisk -> "Asterisk"
+  | Slash -> "Slash"
   | LeftParen -> "LeftParen"
   | RightParen -> "RightParen"
   | LeftBrace -> "LeftBrace"
@@ -53,6 +62,21 @@ let string_of_token = function
   | Semicolon -> "Semicolon"
   | Let -> "Let"
   | Function -> "Function"
+  | If -> "If"
+  | Else -> "Else"
+  | True -> "True"
+  | False -> "False"
+  | Return -> "Return"
 ;;
 
-let keywords = SMap.of_alist_exn [ "let", Let; "fn", Function ]
+let keywords =
+  SMap.of_alist_exn
+    [ "let", Let
+    ; "fn", Function
+    ; "if", If
+    ; "else", Else
+    ; "true", True
+    ; "false", False
+    ; "return", Return
+    ]
+;;

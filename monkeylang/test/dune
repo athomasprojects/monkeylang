@@ -1,5 +1,5 @@
 (test
  (name monkeylang)
- (libraries lib alcotest core)
+ (libraries lib alcotest)
  (preprocess
   (pps ppx_deriving.show ppx_jane ppx_sexp_conv ppx_variants_conv)))
