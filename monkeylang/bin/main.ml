@@ -3,7 +3,7 @@ let () =
   (* let test_input = "[{};<>!?     let" in *)
   (* let test_input = "let [{};<>!? foo_bar" in *)
   let test_input =
-    {|let five = 5;
+    {|  let five = 5;
  let ten = 10;
 
  let add = fn(x, y){

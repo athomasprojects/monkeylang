@@ -25,7 +25,6 @@ let init input =
 let advance_lexer lexer =
   let { input; position; length; _ } = lexer in
   let position = succ position in
-  (* let str_length = String.length input - 1 in *)
   let remaining_chars = length - position in
   if remaining_chars > 0 && remaining_chars < length
   then (
@@ -48,7 +47,6 @@ let read_ident { input; position; length; _ } =
   in
   let tok = lookup_ident ident in
   let offset = String.length ident + (position - 1) in
-  (* let _ = Fmt.pr "offset: %d@." offset in *)
   offset, tok
 ;;
 
@@ -59,7 +57,6 @@ let read_integer { input; position; length; _ } =
   in
   let tok = Token.Integer ident in
   let offset = String.length ident + (position - 1) in
-  (* let _ = Fmt.pr "offset: %d@." offset in *)
   offset, tok
 ;;
 
@@ -171,7 +168,3 @@ let rec next_token lexer =
   | None -> lex, tok
   | Some _ -> next_token lex
 ;;
-
-let string_of_token = Token.string_of_token
-
-module Tok = Token
