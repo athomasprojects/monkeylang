@@ -18,7 +18,7 @@ let init input =
       { input; position = 0; ch = Some (String.get input 1); length }
     | _ -> assert false
   in
-  let _ = Fmt.pr "@.Creating lexer => %a@." pp lex in
+  (* let _ = Fmt.pr "@.Creating lexer => %a@." pp lex in *)
   lex
 ;;
 
@@ -79,22 +79,19 @@ let rec skip_whitespace lexer =
 let update_lexer_pos lexer position = { lexer with position }
 
 let two_char_token ch lexer =
-  let next_ch =
+  let aux next_char (onechar_tok : Token.t) (twochar_tok : Token.t) =
     match lexer.ch with
-    | Some x -> x
-    | None -> Char.of_string ""
+    | None -> onechar_tok, None
+    | Some c ->
+      if Char.equal c next_char
+      then twochar_tok, Some (succ lexer.position)
+      else onechar_tok, None
   in
   let tok, pos =
     let open Token in
     match ch with
-    | '=' ->
-      if Char.equal '=' next_ch
-      then Equal, Some (succ lexer.position)
-      else Assign, None
-    | '!' ->
-      if Char.equal '=' next_ch
-      then NotEqual, Some (succ lexer.position)
-      else Bang, None
+    | '=' -> aux '=' Assign Equal
+    | '!' -> aux '=' Bang NotEqual
     | _ -> assert false
   in
   tok, pos
@@ -136,7 +133,7 @@ let make_token lex ch =
   tok, position
 ;;
 
-let rec next_token lexer =
+let next_token lexer =
   let read_char lex =
     let open Token in
     let lex = skip_whitespace lex in
@@ -150,7 +147,7 @@ let rec next_token lexer =
     (*   | Some c -> Fmt.pr "'%c'@." c *)
     (* in *)
     let tok, pos = make_token lex ch in
-    let _ = string_of_token tok |> Fmt.pr "TOKEN => %s@." in
+    (* let _ = string_of_token tok |> Fmt.pr "TOKEN => %s@." in *)
     let lex =
       match pos with
       | Some position -> update_lexer_pos lex position
@@ -164,7 +161,25 @@ let rec next_token lexer =
       new_lex, Some tok
   in
   let lex, tok = read_char lexer in
-  match tok with
-  | None -> lex, tok
-  | Some _ -> next_token lex
+  lex, tok
 ;;
+
+(* match tok with *)
+(* | None -> lex, tok *)
+(* | Some _ -> next_token lex *)
+
+(* `keep_lexing acc lex` continuously calls the `next_token` on each lexer state until we reach the end of the stream. *)
+let rec keep_lexing acc lex =
+  if lex.position >= lex.length
+  then acc
+  else (
+    let lex, tok = next_token lex in
+    let tok =
+      match tok with
+      | None -> Token.Eof
+      | Some t -> t
+    in
+    keep_lexing (tok :: acc) lex)
+;;
+
+let list_of_tokens l = keep_lexing [] l |> List.rev

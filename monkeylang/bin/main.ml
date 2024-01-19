@@ -1,7 +1,6 @@
+open Lib
+
 let () =
-  let open Lib in
-  (* let test_input = "[{};<>!?     let" in *)
-  (* let test_input = "let [{};<>!? foo_bar" in *)
   let test_input =
     {|  let five = 5;
  let ten = 10;
@@ -22,6 +21,10 @@ let () =
   in
   let lexer = Lexer.init test_input in
   Fmt.pr "@.Lexing...@.";
-  let _ = Lexer.next_token lexer in
+  (* let _ = Lexer.next_token lexer in *)
+  let _ =
+    let tokens = Lexer.list_of_tokens lexer in
+    List.iter (fun t -> Token.pp Fmt.stdout t) tokens
+  in
   Fmt.pr "@.DONE!@."
 ;;

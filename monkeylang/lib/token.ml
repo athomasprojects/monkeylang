@@ -80,3 +80,6 @@ let keywords =
     ; "return", Return
     ]
 ;;
+
+let pp ppf t = Fmt.pf ppf "Token => %s@." (string_of_token t)
+let show t = Fmt.str "Token => %s@." (string_of_token t)
