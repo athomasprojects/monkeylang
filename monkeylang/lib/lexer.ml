@@ -34,10 +34,9 @@ let advance_lexer lexer =
 ;;
 
 let lookup_ident ident =
-  let open Token in
-  match Map.find keywords ident with
+  match Map.find Token.keywords ident with
   | Some keyword -> keyword
-  | None -> Ident ident
+  | None -> Token.Ident ident
 ;;
 
 let read_ident { input; position; length; _ } =
@@ -51,12 +50,12 @@ let read_ident { input; position; length; _ } =
 ;;
 
 let read_integer { input; position; length; _ } =
-  let ident =
+  let number =
     String.slice input position (length + 1)
     |> String.take_while ~f:Char.is_digit
   in
-  let tok = Token.Integer ident in
-  let offset = String.length ident + (position - 1) in
+  let tok = Token.Integer number in
+  let offset = String.length number + (position - 1) in
   offset, tok
 ;;
 
@@ -78,20 +77,20 @@ let rec skip_whitespace lexer =
 
 let update_lexer_pos lexer position = { lexer with position }
 
-let two_char_token ch lexer =
-  let aux next_char (onechar_tok : Token.t) (twochar_tok : Token.t) =
+let two_char_token lexer ch =
+  let aux second ~(onechar_tok : Token.t) ~(twochar_tok : Token.t) =
     match lexer.ch with
     | None -> onechar_tok, None
     | Some c ->
-      if Char.equal c next_char
+      if Char.equal c second
       then twochar_tok, Some (succ lexer.position)
       else onechar_tok, None
   in
   let tok, pos =
     let open Token in
     match ch with
-    | '=' -> aux '=' Assign Equal
-    | '!' -> aux '=' Bang NotEqual
+    | '=' -> aux '=' ~onechar_tok:Assign ~twochar_tok:Equal
+    | '!' -> aux '=' ~onechar_tok:Bang ~twochar_tok:NotEqual
     | _ -> assert false
   in
   tok, pos
@@ -106,8 +105,8 @@ let make_token lex ch =
     | None -> Eof, pos
     | Some c ->
       (match c with
-       | '=' -> two_char_token c lex
-       | '!' -> two_char_token c lex
+       | '=' -> two_char_token lex c
+       | '!' -> two_char_token lex c
        | '-' -> Minus, pos
        | '+' -> Plus, pos
        | '*' -> Asterisk, pos
@@ -138,14 +137,6 @@ let next_token lexer =
     let open Token in
     let lex = skip_whitespace lex in
     let ch = current_char lex in
-    (* let remaining_chars = lex.length - lex.position in *)
-    (* let _ = Fmt.pr "Remaining characters: %d@." remaining_chars in *)
-    (* let _ = Fmt.pr "current lexer: %a; current ch => " pp lex in *)
-    (* let _ = *)
-    (*   match ch with *)
-    (*   | None -> Fmt.pr "NONE@." *)
-    (*   | Some c -> Fmt.pr "'%c'@." c *)
-    (* in *)
     let tok, pos = make_token lex ch in
     (* let _ = string_of_token tok |> Fmt.pr "TOKEN => %s@." in *)
     let lex =
@@ -160,15 +151,14 @@ let next_token lexer =
       (* let _ = Fmt.pr "==== Advancing lexer@." in *)
       new_lex, Some tok
   in
-  let lex, tok = read_char lexer in
-  lex, tok
+  read_char lexer
 ;;
 
 (* match tok with *)
 (* | None -> lex, tok *)
 (* | Some _ -> next_token lex *)
 
-(* `keep_lexing acc lex` continuously calls the `next_token` on each lexer state until we reach the end of the stream. *)
+(* `keep_lexing` continuously calls the `next_token` on each lexer state until we reach the end of the stream. *)
 let rec keep_lexing acc lex =
   if lex.position >= lex.length
   then acc
