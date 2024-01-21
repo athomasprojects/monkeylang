@@ -40,7 +40,7 @@ let rec next_token lexer =
       | ',' -> advance lexer, Comma
       | ';' -> advance lexer, Semicolon
       | ch when is_letter ch -> read_identifier lexer
-      | ch when Char.is_digit ch -> read_integer lexer
+      | ch when Char.is_digit ch -> read_number lexer
       | ch when is_string ch -> read_string lexer
       | _ -> advance lexer, Illegal
     in
@@ -89,7 +89,7 @@ and read_identifier lexer =
   let position = lexer.position + String.length ident - 1 in
   advance { lexer with position }, tok
 
-and read_integer lexer =
+and read_number lexer =
   let ident = take_while lexer Char.is_digit in
   let tok = Token.Integer ident in
   let position = lexer.position + String.length ident - 1 in

@@ -1,9 +1,8 @@
 type t =
   | Illegal
   | Eof
-  (* Integer *)
-  | Integer of string
   (* Identifiers *)
+  | Integer of string
   | Ident of string
   | String_ of string
   (* Operators *)

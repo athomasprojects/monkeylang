@@ -2,17 +2,6 @@ open Monkey
 open Core
 
 module Test = struct
-  let input_to_token_list input =
-    let rec aux acc l =
-      let l, token = Lexer.next_token l in
-      match token with
-      | None -> acc
-      | Some t -> aux (t :: acc) l
-    in
-    let lexer = Lexer.init input in
-    aux [] lexer |> List.rev
-  ;;
-
   let lexer_testable = Alcotest.testable Lexer.pp Lexer.equal
   let token_testable = Alcotest.testable Token.pp Token.equal
 
@@ -193,9 +182,16 @@ module Test = struct
       ; String_ "string"
       ]
     in
-    let tokens = input_to_token_list input in
+    let tokens = Util.input_to_token_list input in
     List.iter2_exn expected tokens ~f:(fun ex tok ->
       Alcotest.(check token_testable) "same Token.t" ex tok)
+  ;;
+
+  let test_next_token_empty () =
+    Alcotest.(check token_testable)
+      "same Token.t"
+      Token.Eof
+      (Lexer.init "" |> token_opt_value)
   ;;
 end
 
@@ -206,7 +202,8 @@ let () =
       , [ Alcotest.test_case "Empty string" `Quick Test.test_init_lexer_empty ]
       )
     ; ( "next-token"
-      , [ Alcotest.test_case "Individual tokens" `Quick Test.test_next_token_one
+      , [ Alcotest.test_case "No input" `Quick Test.test_next_token_empty
+        ; Alcotest.test_case "Individual tokens" `Quick Test.test_next_token_one
         ; Alcotest.test_case
             "Monkey source code"
             `Quick
