@@ -6,170 +6,107 @@ type t =
   ; ch : char option
   ; length : int
   }
-[@@deriving show]
+[@@deriving show, eq]
 
-(* Initializes the lexer. *)
 let init input =
-  let length = String.length input - 1 in
-  let lex =
-    match length with
-    | -1 | 0 -> { input; position = 0; ch = None; length }
-    | x when x >= 1 ->
-      { input; position = 0; ch = Some (String.get input 1); length }
-    | _ -> assert false
-  in
-  (* let _ = Fmt.pr "@.Creating lexer => %a@." pp lex in *)
-  lex
+  let length = String.length input in
+  if String.is_empty input
+  then { input; position = 0; ch = None; length }
+  else { input; position = 0; ch = Some (String.get input 0); length }
 ;;
 
-let advance_lexer lexer =
-  let { input; position; length; _ } = lexer in
-  let position = succ position in
-  let remaining_chars = length - position in
-  if remaining_chars > 0 && remaining_chars < length
-  then (
-    let ch = Some (String.get input (succ position)) in
-    { input; position; ch; length })
-  else { input; position; ch = None; length }
-;;
-
-let lookup_ident ident =
-  match Map.find Token.keywords ident with
-  | Some keyword -> keyword
-  | None -> Token.Ident ident
-;;
-
-let read_ident { input; position; length; _ } =
-  let ident =
-    String.slice input position (length + 1)
-    |> String.take_while ~f:(fun c -> Char.is_alpha c || Char.equal '_' c)
-  in
-  let tok = lookup_ident ident in
-  let offset = String.length ident + (position - 1) in
-  offset, tok
-;;
-
-let read_integer { input; position; length; _ } =
-  let number =
-    String.slice input position (length + 1)
-    |> String.take_while ~f:Char.is_digit
-  in
-  let tok = Token.Integer number in
-  let offset = String.length number + (position - 1) in
-  offset, tok
-;;
-
-let current_char lex =
-  let remaining_chars = lex.length - lex.position in
-  if remaining_chars >= 0 && remaining_chars <= lex.length
-  then Some (String.get lex.input lex.position)
-  else None
-;;
-
-let rec skip_whitespace lexer =
-  match current_char lexer with
+let rec next_token lexer =
+  let lexer = skip_whitespace lexer in
+  let open Token in
+  match lexer.ch with
+  | None -> lexer, None
   | Some ch ->
-    if Char.is_whitespace ch
-    then skip_whitespace (advance_lexer lexer)
-    else lexer
-  | None -> lexer
-;;
-
-let update_lexer_pos lexer position = { lexer with position }
-
-let two_char_token lexer ch =
-  let aux second ~(onechar_tok : Token.t) ~(twochar_tok : Token.t) =
-    match lexer.ch with
-    | None -> onechar_tok, None
-    | Some c ->
-      if Char.equal c second
-      then twochar_tok, Some (succ lexer.position)
-      else onechar_tok, None
-  in
-  let tok, pos =
-    let open Token in
-    match ch with
-    | '=' -> aux '=' ~onechar_tok:Assign ~twochar_tok:Equal
-    | '!' -> aux '=' ~onechar_tok:Bang ~twochar_tok:NotEqual
-    | _ -> assert false
-  in
-  tok, pos
-;;
-
-(* Keeps lexing until `next_token` returns `None`. This is when the entire stream of characters has been tokenized and have reached the end of the input stream. *)
-let make_token lex ch =
-  let pos = None in
-  let tok, position =
-    let open Token in
-    match ch with
-    | None -> Eof, pos
-    | Some c ->
-      (match c with
-       | '=' -> two_char_token lex c
-       | '!' -> two_char_token lex c
-       | '-' -> Minus, pos
-       | '+' -> Plus, pos
-       | '*' -> Asterisk, pos
-       | '/' -> Slash, pos
-       | '(' -> LeftParen, pos
-       | ')' -> RightParen, pos
-       | '{' -> LeftBrace, pos
-       | '}' -> RightBrace, pos
-       | '[' -> LeftBracket, pos
-       | '<' -> LessThan, pos
-       | '>' -> GreaterThan, pos
-       | ']' -> RightBracket, pos
-       | ',' -> Comma, pos
-       | ';' -> Semicolon, pos
-       | 'a' .. 'z' | 'A' .. 'Z' | '_' ->
-         let pos, t = read_ident lex in
-         t, Some pos
-       | '0' .. '9' ->
-         let pos, t = read_integer lex in
-         t, Some pos
-       | _ -> Illegal, pos)
-  in
-  tok, position
-;;
-
-let next_token lexer =
-  let read_char lex =
-    let open Token in
-    let lex = skip_whitespace lex in
-    let ch = current_char lex in
-    let tok, pos = make_token lex ch in
-    (* let _ = string_of_token tok |> Fmt.pr "TOKEN => %s@." in *)
-    let lex =
-      match pos with
-      | Some position -> update_lexer_pos lex position
-      | None -> lex
+    let lexer, tok =
+      match ch with
+      | '=' -> two_char_token lexer '=' ~default:Assign ~matched:Equal
+      | '!' -> two_char_token lexer '=' ~default:Bang ~matched:NotEqual
+      | '-' -> advance lexer, Minus
+      | '+' -> advance lexer, Plus
+      | '*' -> advance lexer, Asterisk
+      | '/' -> advance lexer, Slash
+      | '(' -> advance lexer, LeftParen
+      | ')' -> advance lexer, RightParen
+      | '{' -> advance lexer, LeftBrace
+      | '}' -> advance lexer, RightBrace
+      | '[' -> advance lexer, LeftBracket
+      | '<' -> advance lexer, LessThan
+      | '>' -> advance lexer, GreaterThan
+      | ']' -> advance lexer, RightBracket
+      | ',' -> advance lexer, Comma
+      | ';' -> advance lexer, Semicolon
+      | ch when is_letter ch -> read_identifier lexer
+      | ch when Char.is_digit ch -> read_integer lexer
+      | _ -> advance lexer, Illegal
     in
-    match tok with
-    | Eof -> lex, None
-    | _ ->
-      let new_lex = advance_lexer lex in
-      (* let _ = Fmt.pr "==== Advancing lexer@." in *)
-      new_lex, Some tok
+    (* let _ = Fmt.pr "Token => %a@." Token.pp tok in *)
+    lexer, Some tok
+
+and advance lexer =
+  let lexer =
+    if lexer.position >= lexer.length - 1
+    then { lexer with ch = None }
+    else (
+      let position = succ lexer.position in
+      { lexer with position; ch = Some (String.get lexer.input position) })
   in
-  read_char lexer
+  lexer
+
+and scan_until lexer condition =
+  let rec loop lexer =
+    if condition lexer.ch then loop @@ advance lexer else lexer
+  in
+  let lexer = loop lexer in
+  lexer, lexer.position
+
+and skip_whitespace lexer =
+  let lexer, _ =
+    scan_until lexer (fun ch ->
+      match ch with
+      | Some ch -> Char.is_whitespace ch
+      | None -> false)
+  in
+  lexer
+
+and is_letter ch = Char.is_alpha ch || Char.equal '_' ch
+
+and take_while lexer condition =
+  let str =
+    String.slice lexer.input lexer.position lexer.length
+    |> String.take_while ~f:condition
+  in
+  str
+
+and read_identifier lexer =
+  let ident = take_while lexer is_letter in
+  let tok = Token.lookup_ident ident in
+  let position = lexer.position + String.length ident - 1 in
+  advance { lexer with position }, tok
+
+and read_integer lexer =
+  let ident = take_while lexer Char.is_digit in
+  let tok = Token.Integer ident in
+  let position = lexer.position + String.length ident - 1 in
+  advance { lexer with position }, tok
+
+and peek_char lexer =
+  let remaining_chars = lexer.length - lexer.position - 1 in
+  if remaining_chars >= 1
+  then Some (String.get lexer.input (succ lexer.position))
+  else None
+
+and two_char_token lexer match_char ~(default : Token.t) ~(matched : Token.t) =
+  let lexer, tok =
+    match peek_char lexer with
+    | Some peek ->
+      if Char.equal match_char peek
+      then advance @@ advance lexer, matched
+      else advance lexer, default
+    | None -> advance lexer, default
+  in
+  lexer, tok
 ;;
-
-(* match tok with *)
-(* | None -> lex, tok *)
-(* | Some _ -> next_token lex *)
-
-(* `keep_lexing` continuously calls the `next_token` on each lexer state until we reach the end of the stream. *)
-let rec keep_lexing acc lex =
-  if lex.position >= lex.length
-  then acc
-  else (
-    let lex, tok = next_token lex in
-    let tok =
-      match tok with
-      | None -> Token.Eof
-      | Some t -> t
-    in
-    keep_lexing (tok :: acc) lex)
-;;
-
-let list_of_tokens l = keep_lexing [] l |> List.rev

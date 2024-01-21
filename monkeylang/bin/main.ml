@@ -1,7 +1,26 @@
-open Lib
+open Monkey
+open Core
+
+let () = Fmt.pr "@.>> Welcome to Monkey!@."
+
+let input_to_token_list input =
+  let rec aux acc l =
+    let l, token = Lexer.next_token l in
+    match token with
+    | None -> acc
+    | Some t -> aux (t :: acc) l
+  in
+  List.rev @@ aux [] (Lexer.init input)
+;;
+
+let _print_token token =
+  match token with
+  | Some t -> Fmt.pr "Token => %a@." Token.pp t
+  | None -> Fmt.pr "==== END OF STREAM =====@."
+;;
 
 let () =
-  let test_input =
+  let input =
     {|  let five = 5;
  let ten = 10;
 
@@ -19,12 +38,10 @@ let () =
  10 != 9;
  baz =!= 420|}
   in
-  let lexer = Lexer.init test_input in
-  Fmt.pr "@.Lexing...@.";
-  (* let _ = Lexer.next_token lexer in *)
+  let _ = Fmt.pr "==== Lexing ====@.@." in
+  let tokens = input_to_token_list input in
   let _ =
-    let tokens = Lexer.list_of_tokens lexer in
-    List.iter (fun t -> Token.pp Fmt.stdout t) tokens
+    List.iter tokens ~f:(fun token -> Fmt.pr "Token => %a@." Token.pp token)
   in
-  Fmt.pr "@.DONE!@."
+  Fmt.pr "@.==== END OF STREAM =====@."
 ;;
