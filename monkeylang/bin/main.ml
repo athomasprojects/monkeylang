@@ -10,13 +10,8 @@ let input_to_token_list input =
     | None -> acc
     | Some t -> aux (t :: acc) l
   in
-  List.rev @@ aux [] (Lexer.init input)
-;;
-
-let _print_token token =
-  match token with
-  | Some t -> Fmt.pr "Token => %a@." Token.pp t
-  | None -> Fmt.pr "==== END OF STREAM =====@."
+  let lexer = Lexer.init input in
+  List.rev @@ aux [] lexer
 ;;
 
 let () =
@@ -36,8 +31,17 @@ let () =
  }
  10 == 10;
  10 != 9;
- baz =!= 420|}
+ baz =!= 420
+ "string"|}
   in
+  let _ = Fmt.pr "%s@." input in
+  (* let tokens = *)
+  (*   let lexer = Lexer.init input in *)
+  (*   let _, token = Lexer.next_token lexer in *)
+  (*   match token with *)
+  (*   | Some t -> [ t ] *)
+  (*   | None -> [] *)
+  (* in *)
   let _ = Fmt.pr "==== Lexing ====@.@." in
   let tokens = input_to_token_list input in
   let _ =

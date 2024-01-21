@@ -41,6 +41,7 @@ let rec next_token lexer =
       | ';' -> advance lexer, Semicolon
       | ch when is_letter ch -> read_identifier lexer
       | ch when Char.is_digit ch -> read_integer lexer
+      | ch when is_string ch -> read_string lexer
       | _ -> advance lexer, Illegal
     in
     (* let _ = Fmt.pr "Token => %a@." Token.pp tok in *)
@@ -72,6 +73,7 @@ and skip_whitespace lexer =
   in
   lexer
 
+and is_string ch = Char.equal '"' ch
 and is_letter ch = Char.is_alpha ch || Char.equal '_' ch
 
 and take_while lexer condition =
@@ -91,6 +93,13 @@ and read_integer lexer =
   let ident = take_while lexer Char.is_digit in
   let tok = Token.Integer ident in
   let position = lexer.position + String.length ident - 1 in
+  advance { lexer with position }, tok
+
+and read_string lexer =
+  let lexer = advance lexer in
+  let ident = take_while lexer (fun ch -> not (is_string ch)) in
+  let tok = Token.String_ ident in
+  let position = lexer.position + String.length ident in
   advance { lexer with position }, tok
 
 and peek_char lexer =

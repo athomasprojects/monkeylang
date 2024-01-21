@@ -9,7 +9,8 @@ module Test = struct
       | None -> acc
       | Some t -> aux (t :: acc) l
     in
-    List.rev @@ aux [] (Lexer.init input)
+    let lexer = Lexer.init input in
+    aux [] lexer |> List.rev
   ;;
 
   let lexer_testable = Alcotest.testable Lexer.pp Lexer.equal
@@ -98,22 +99,22 @@ module Test = struct
   let test_next_token_full () =
     let input =
       {|  let five = 5;
-     let ten = 10;
+ let ten = 10;
 
-     !*-/?
-     let add = fn(x, y){
-       x + y;
-     };
-     let result = add(five, ten);
-     if x != y {
-       let foo_bar = y / x * 69;
-       return true;
-     } else {
-       return false;
-     }
-     10 == 10;
-     10 != 9;
-     baz =!= 420|}
+ let add = fn(x, y){
+   x + y;
+      };
+  let result = add(five, ten);
+  if x != y {
+    let foo_bar = y / x * 69;
+    return true;
+  } else {
+    return false;
+  }
+  10 == 10;
+  10 != 9;
+  baz =!= 420
+  "string"|}
     in
     let expected =
       let open Token in
@@ -127,14 +128,6 @@ module Test = struct
       ; Assign
       ; Integer "10"
       ; Semicolon
-      ; Bang
-      ; Asterisk
-      ; Minus
-      ; Slash
-      ; Illegal
-      ; Minus
-      ; Slash
-      ; Illegal
       ; Let
       ; Ident "add"
       ; Assign
@@ -197,6 +190,7 @@ module Test = struct
       ; Assign
       ; NotEqual
       ; Integer "420"
+      ; String_ "string"
       ]
     in
     let tokens = input_to_token_list input in

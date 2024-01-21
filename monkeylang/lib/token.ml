@@ -5,6 +5,7 @@ type t =
   | Integer of string
   (* Identifiers *)
   | Ident of string
+  | String_ of string
   (* Operators *)
   | Assign
   | Plus
