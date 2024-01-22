@@ -1,5 +1,4 @@
 open Monkey
-open Core
 
 let () = Fmt.pr "@.>> Welcome to Monkey!@."
 
@@ -27,7 +26,7 @@ let () =
   let _ = Fmt.pr "==== Lexing ====@.@." in
   let tokens = Util.input_to_token_list input in
   let _ =
-    List.iter tokens ~f:(fun token -> Fmt.pr "Token => %a@." Token.pp token)
+    List.iter (fun token -> Fmt.pr "Token => %a@." Token.pp token) tokens
   in
   Fmt.pr "@.==== END OF STREAM =====@."
 ;;

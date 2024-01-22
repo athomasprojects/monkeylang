@@ -6,11 +6,13 @@ type 'a t =
   ; mutable len : int
   }
 
+let length v = v.len
 let create len dummy_elt = { array = Array.create ~len dummy_elt; len = 0 }
 
 let grow v dummy_elt =
   let len = (2 * v.len) + 1 in
-  v.array <- Array.append v.array (Array.create ~len dummy_elt)
+  v.array
+  <- Array.init len ~f:(fun i -> if i < v.len then v.array.(i) else dummy_elt)
 ;;
 
 let push v elt =
@@ -28,3 +30,4 @@ let pop v i =
 
 let get v i = if i >= v.len || i < 0 then None else Some v.array.(i)
 let to_list v = Array.init v.len ~f:(fun i -> v.array.(i)) |> Array.to_list
+let of_list x = { array = Array.of_list x; len = List.length x }
