@@ -20,9 +20,6 @@ and condition str =
      | "quit" -> false
      | "" | _ -> true)
 
-and tokens_of_input input =
-  Util.input_to_token_list input |> Util.print_listof_tokens
-
 and loop () =
   let input = ref (read_in ()) in
   let cond = ref (condition !input) in
