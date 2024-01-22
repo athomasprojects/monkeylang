@@ -6,7 +6,7 @@ let rec start () =
   Fmt.pr
     "Hello! This is the monkey programming language!@.Feel free to type in \
      commands@.";
-  loop ()
+  loop (read_in ())
 
 and read_in () =
   print_prompt ();
@@ -20,13 +20,22 @@ and condition str =
      | "quit" -> false
      | "" | _ -> true)
 
-and loop () =
-  let input = ref (read_in ()) in
-  let cond = ref (condition !input) in
-  while !cond do
-    let str = Option.value !input ~default:"" in
+(* and loop () = *)
+(*   let input = ref (read_in ()) in *)
+(*   let cond = ref (condition !input) in *)
+(*   while !cond do *)
+(*     let str = Option.value !input ~default:"" in *)
+(*     let _ = Util.input_to_token_list str |> Util.print_listof_tokens in *)
+(*     input := read_in (); *)
+(*     cond := condition !input *)
+(*   done *)
+
+and loop input =
+  if condition input
+  then (
+    let str = Option.value input ~default:"" in
     let _ = Util.input_to_token_list str |> Util.print_listof_tokens in
-    input := read_in ();
-    cond := condition !input
-  done
+    let input = read_in () in
+    loop input)
+  else ()
 ;;

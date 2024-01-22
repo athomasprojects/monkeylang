@@ -100,8 +100,15 @@ and read_number lexer =
 and read_string lexer =
   let lexer = advance lexer in
   let ident = take_while lexer (fun ch -> not (is_string ch)) in
-  let tok = Token.Str ident in
   let position = lexer.position + String.length ident in
+  let tok =
+    if position >= lexer.length
+       (* then Fmt.failwith "Missing matching double qoute@." *)
+       (* TODO: an illegal token should probably be handled in the parser stage. For now we can just mark the token as invalid. *)
+    then Token.Illegal
+    else Token.Str ident
+  in
+  let _ = Fmt.pr "@.Position: %d, lexer length: %d@." position lexer.length in
   advance { lexer with position }, tok
 
 and peek_char lexer =
