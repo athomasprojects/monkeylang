@@ -25,6 +25,8 @@ let rec next_token lexer =
       match ch with
       | '=' -> two_char_token lexer '=' ~default:Assign ~matched:Equal
       | '!' -> two_char_token lexer '=' ~default:Bang ~matched:NotEqual
+      (* | '|' -> two_char_token lexer '|' ~default:Illegal ~matched:Or *)
+      (* | '&' -> two_char_token lexer '&' ~default:Illegal ~matched:And *)
       | '-' -> advance lexer, Minus
       | '+' -> advance lexer, Plus
       | '*' -> advance lexer, Asterisk
@@ -98,7 +100,7 @@ and read_number lexer =
 and read_string lexer =
   let lexer = advance lexer in
   let ident = take_while lexer (fun ch -> not (is_string ch)) in
-  let tok = Token.String_ ident in
+  let tok = Token.Str ident in
   let position = lexer.position + String.length ident in
   advance { lexer with position }, tok
 

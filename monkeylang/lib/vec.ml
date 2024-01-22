@@ -1,6 +1,5 @@
 open Core
 
-(* [len] is the number of elements in the vector.*)
 type 'a t =
   { mutable array : 'a array
   ; mutable len : int
@@ -31,3 +30,10 @@ let pop v i =
 let get v i = if i >= v.len || i < 0 then None else Some v.array.(i)
 let to_list v = Array.init v.len ~f:(fun i -> v.array.(i)) |> Array.to_list
 let of_list x = { array = Array.of_list x; len = List.length x }
+
+let pp ppf v =
+  Format.printf
+    "%a"
+    (Format.pp_print_array ~pp_sep:(fun fmt () -> Format.fprintf fmt "@.") ppf)
+    (Array.init v.len ~f:(fun i -> v.array.(i)))
+;;

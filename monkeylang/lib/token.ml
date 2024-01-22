@@ -4,7 +4,7 @@ type t =
   (* Identifiers *)
   | Integer of string
   | Ident of string
-  | String_ of string
+  | Str of string
   (* Operators *)
   | Assign
   | Plus
@@ -14,6 +14,8 @@ type t =
   | Bang
   | Asterisk
   | Slash
+  | Or
+  | And
   (* Delimeters *)
   | LeftParen
   | RightParen

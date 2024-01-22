@@ -179,7 +179,7 @@ module Test = struct
       ; Assign
       ; NotEqual
       ; Integer "420"
-      ; String_ "string"
+      ; Str "string"
       ]
     in
     let tokens = Util.input_to_token_list input in
