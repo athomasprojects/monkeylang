@@ -14,8 +14,8 @@ type t =
   | Bang
   | Asterisk
   | Slash
-  | Or
-  | And
+  (* | Or *)
+  (* | And *)
   (* Delimeters *)
   | LeftParen
   | RightParen

@@ -1,5 +1,6 @@
 open Core
 
+(* [array] is the underlying array used to store the vector elements. [len] is the number of elements in the vector. [len] is not necessarily equal to the the length of [array]. *)
 type 'a t =
   { mutable array : 'a array
   ; mutable len : int

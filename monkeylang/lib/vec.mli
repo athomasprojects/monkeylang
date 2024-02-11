@@ -10,10 +10,10 @@ val length : 'a t -> int
 (** [push v elt] appends [elt] to [v]. *)
 val push : 'a t -> 'a -> unit
 
-(** [pop v i] removes the element at index [i]. If [v] contains elements after the index [i] then the index of each remaining elements is shifted down by 1. *)
+(** [pop v i] removes the [i]th element. If [v] contains elements after the index [i] then the index of each remaining elements is shifted down by one. *)
 val pop : 'a t -> int -> unit
 
-(** [get v i] returns the element at [i] if it exists, otherwise nothing is returned. *)
+(** [get v i] returns [i]th element of [v] if it exists, otherwise nothing is returned. *)
 val get : 'a t -> int -> 'a option
 
 (** [to_list v] converts [v] to a list. *)
