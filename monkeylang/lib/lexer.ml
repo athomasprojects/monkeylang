@@ -49,13 +49,12 @@ let rec next_token lexer =
     (* let _ = Fmt.pr "Token => %a@." Token.pp tok in *)
     lexer, Some tok
 
-and advance lexer =
-  let lexer =
-    if lexer.position >= lexer.length - 1
-    then { lexer with ch = None }
-    else (
-      let position = succ lexer.position in
-      { lexer with position; ch = Some (String.get lexer.input position) })
+and skip_whitespace lexer =
+  let lexer, _ =
+    scan_until lexer (fun ch ->
+      match ch with
+      | Some ch -> Char.is_whitespace ch
+      | None -> false)
   in
   lexer
 
@@ -66,24 +65,22 @@ and scan_until lexer condition =
   let lexer = loop lexer in
   lexer, lexer.position
 
-and skip_whitespace lexer =
-  let lexer, _ =
-    scan_until lexer (fun ch ->
-      match ch with
-      | Some ch -> Char.is_whitespace ch
-      | None -> false)
+and advance lexer =
+  let lexer =
+    if lexer.position >= lexer.length - 1
+    then { lexer with ch = None }
+    else (
+      let position = succ lexer.position in
+      { lexer with position; ch = Some (String.get lexer.input position) })
   in
   lexer
 
-and is_string ch = Char.equal '"' ch
-and is_letter ch = Char.is_alpha ch || Char.equal '_' ch
+and is_string ch = Char.('"' = ch)
+and is_letter ch = Char.is_alpha ch || Char.('_' = ch)
 
 and take_while lexer condition =
-  let str =
-    String.slice lexer.input lexer.position lexer.length
-    |> String.take_while ~f:condition
-  in
-  str
+  String.slice lexer.input lexer.position lexer.length
+  |> String.take_while ~f:condition
 
 and read_identifier lexer =
   let ident = take_while lexer is_letter in
@@ -120,8 +117,8 @@ and peek_char lexer =
 and two_char_token lexer match_char ~default ~matched =
   let lexer, tok =
     match peek_char lexer with
-    | Some peek ->
-      if Char.equal match_char peek
+    | Some peeked ->
+      if Char.(match_char = peeked)
       then advance @@ advance lexer, matched
       else advance lexer, default
     | None -> advance lexer, default
